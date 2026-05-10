@@ -239,8 +239,8 @@ def scene_skewer(letter, ingredients, idx, accent):
     d.ellipse([cx - cr + 8, cy - cr + 8, cx + cr - 8, cy + cr - 8],
               outline=(255, 255, 255, 200), width=4)
     f_letter = font(F_BLACK, 180)
-    lw, lh = text_size(d, letter, f_letter)
-    d.text((cx - lw // 2, cy - lh // 2 - 18), letter, font=f_letter, fill=WHITE)
+    # Use anchor=mm to center on the glyph's geometric middle, not the text-bbox.
+    d.text((cx, cy), letter, font=f_letter, fill=WHITE, anchor="mm")
 
     # "の3種" handwritten label - put in a small white pill so it reads on any bg
     f_label = font(F_HAND, 52)
@@ -305,12 +305,25 @@ def scene_price():
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
 
-    # top dim
-    gradient_band(im, 0, 380, top_alpha=200, bot_alpha=0)
-
-    f_h = font(F_BLACK, 76)
+    # Pill-card behind the headline so it never collides with the sticks
+    # poking out of the dish in the photo.
+    f_h = font(F_BLACK, 72)
     head = "選べる3種から、お好きに。"
-    draw_text_outline_centered(d, 110, head, f_h, WHITE, INK, ow=6)
+    hw, hh = text_size(d, head, f_h)
+    pad_x, pad_y = 50, 26
+    pw = hw + pad_x * 2
+    ph = hh + pad_y * 2 + 8
+    px = (W - pw) // 2
+    py = 110
+    # soft drop shadow
+    sh = Image.new("RGBA", (pw + 80, ph + 80), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle([40, 50, 40 + pw, 50 + ph],
+                                          radius=ph // 2, fill=(0, 0, 0, 130))
+    sh = sh.filter(ImageFilter.GaussianBlur(14))
+    im.alpha_composite(sh, (px - 40, py - 50 + 8))
+    # main pill
+    draw_pill(d, (px, py), (pw, ph), DEEP)
+    d.text((px + pad_x, py + pad_y - 4), head, font=f_h, fill=WHITE)
 
     # bottom card
     card_h = 920
@@ -351,11 +364,6 @@ def scene_price():
         yw, yh = text_size(d, yen, f_yen)
         d.text((W - row_x_right_pad - yw, ry + bp_h - 4), yen, font=f_yen, fill=color)
 
-        # divider (except last)
-        if i < len(items) - 1:
-            d.rounded_rectangle([row_x_left, ry + row_gap - 28,
-                                 W - row_x_right_pad, ry + row_gap - 22],
-                                radius=3, fill=(220, 200, 180, 220))
 
     im.save(f"{OUT}/08_price.png")
 
