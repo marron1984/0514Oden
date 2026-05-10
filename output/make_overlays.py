@@ -260,18 +260,27 @@ def scene_skewer(letter, ingredients, idx, accent):
         d.text((216, y), ing, font=f_ing, fill=DEEP)
         y += 130
 
-    # price strip
+    # price strip — center both glyphs on the pill's vertical midline
+    # using anchor="lm" so the differing font sizes do not split baselines.
     f_p1 = font(F_BLACK, 56)
     f_p2 = font(F_BLACK, 88)
     qty, yen = "1本", "¥300"
-    yw, _ = text_size(d, yen, f_p2)
-    qw, _ = text_size(d, qty, f_p1)
-    total = qw + 24 + yw
+    qb = d.textbbox((0, 0), qty, font=f_p1)
+    yb = d.textbbox((0, 0), yen, font=f_p2)
+    qw = qb[2] - qb[0]
+    yw = yb[2] - yb[0]
+    gap = 28
+    total = qw + gap + yw
     px0 = (W - total) // 2
-    py0 = card_y + card_h - 140
-    draw_pill(d, (px0 - 56, py0 - 14), (total + 112, 118), accent)
-    d.text((px0, py0 + 28), qty, font=f_p1, fill=WHITE)
-    d.text((px0 + qw + 24, py0 + 6), yen, font=f_p2, fill=WHITE)
+    pill_h = 118
+    py0 = card_y + card_h - 130
+    pill_x = px0 - 56
+    pill_w = total + 112
+    pill_y = py0
+    draw_pill(d, (pill_x, pill_y), (pill_w, pill_h), accent)
+    mid_y = pill_y + pill_h // 2
+    d.text((px0,           mid_y), qty, font=f_p1, fill=WHITE, anchor="lm")
+    d.text((px0 + qw + gap, mid_y), yen, font=f_p2, fill=WHITE, anchor="lm")
 
     im.save(f"{OUT}/{idx:02d}_skewer_{letter}.png")
 
