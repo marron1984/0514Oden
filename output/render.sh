@@ -93,11 +93,14 @@ ffmpeg -y -hide_banner -loglevel error \
   "$WORK/video_silent.mp4"
 echo "concat ok"
 
-# Mux audio (BGM) — fade in/out for polish
+# Mux audio (BGM from repo MP3) — trim to 23s, fade in/out, light loudness normalize
+BGM="$WORK/source_bgm.mp3"
+[ -f "$BGM" ] || BGM="$WORK/bgm.wav"
+
 ffmpeg -y -hide_banner -loglevel error \
   -i "$WORK/video_silent.mp4" \
-  -i "$WORK/bgm.wav" \
-  -filter_complex "[1:a]afade=t=in:st=0:d=0.4,afade=t=out:st=21.5:d=1.5,aresample=44100[a]" \
+  -i "$BGM" \
+  -filter_complex "[1:a]atrim=0:23,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.6,afade=t=out:st=21.4:d=1.6,loudnorm=I=-16:TP=-1.5:LRA=11,aresample=44100[a]" \
   -map 0:v -map "[a]" \
   -c:v copy -c:a aac -b:a 192k -shortest \
   "$WORK/chibi_oden_reel.mp4"
