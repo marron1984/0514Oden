@@ -353,26 +353,30 @@ def scene_price():
     f_qty = font(F_BLACK, 110)
     f_yen = font(F_BLACK, 130)
     f_bdg = font(F_BLACK, 40)
-    row_y = card_y + 240
-    row_gap = 200
     row_x_left = 130
     row_x_right_pad = 130
+    # First qty top + per-row stride. Position the badge IMMEDIATELY above
+    # its own qty so it visually pairs with that row, not with the row above.
+    qty_top_first = card_y + 280
+    row_gap = 230
+    badge_gap = 4  # px between badge bottom and qty top
     for i, (qty, yen, badge, color) in enumerate(items):
-        ry = row_y + i * row_gap
+        qty_y = qty_top_first + i * row_gap
 
-        # badge above qty
+        # badge sits just above qty
         bw, bh = text_size(d, badge, f_bdg)
         bp_w, bp_h = bw + 44, bh + 22
-        draw_pill(d, (row_x_left, ry - 8), (bp_w, bp_h), color)
-        d.text((row_x_left + 22, ry - 8 + 6), badge, font=f_bdg, fill=WHITE)
+        bp_y = qty_y - bp_h - badge_gap
+        draw_pill(d, (row_x_left, bp_y), (bp_w, bp_h), color)
+        d.text((row_x_left + 22, bp_y + 6), badge, font=f_bdg, fill=WHITE)
 
         # qty (left)
-        d.text((row_x_left, ry + bp_h + 6), qty, font=f_qty, fill=DEEP)
+        d.text((row_x_left, qty_y), qty, font=f_qty, fill=DEEP)
 
-        # yen (right, baseline aligned)
-        yw, yh = text_size(d, yen, f_yen)
-        d.text((W - row_x_right_pad - yw, ry + bp_h - 4), yen, font=f_yen, fill=color)
-
+        # yen (right) baseline-aligned to qty via anchor=lm
+        qb = d.textbbox((0, 0), qty, font=f_qty)
+        q_mid_y = qty_y + (qb[1] + qb[3]) // 2
+        d.text((W - row_x_right_pad, q_mid_y), yen, font=f_yen, fill=color, anchor="rm")
 
     im.save(f"{OUT}/08_price.png")
 
