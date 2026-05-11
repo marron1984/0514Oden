@@ -121,7 +121,7 @@ def scene_hook():
 
     # Sub
     f_sub = font(F_HAND, 60)
-    sub = "あの“チビ〇おでん”に、新作。"
+    sub = "新作  チビ〇おでん。"
     draw_text_outline_centered(d, py + ph + 50 + 140, sub, f_sub, GOLD, INK, ow=4)
 
     im.save(f"{OUT}/01_hook.png")
