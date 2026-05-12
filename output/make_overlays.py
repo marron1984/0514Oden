@@ -228,29 +228,50 @@ def scene_skewer(letter, ingredients, idx, accent):
     # accent bar header inside card
     d.rounded_rectangle([100, card_y + 78, W - 100, card_y + 90], radius=6, fill=accent)
 
-    # giant accent circle (overlaps top edge of card)
-    cx, cy, cr = 230, card_y - 30, 130
+    # ---- Centered "A の3種" header group ----
+    # Lay out the circle + "の3種" pill as one unit, then center the unit.
+    f_label = font(F_HAND, 52)
+    lbl = "の3種"
+    lb = d.textbbox((0, 0), lbl, font=f_label)
+    lw = lb[2] - lb[0]
+    lh = lb[3] - lb[1]
+    pill_pad_x = 22
+    pill_pad_y = 10
+    label_pill_w = lw + pill_pad_x * 2
+    label_pill_h = lh + pill_pad_y * 2 + 8
+    cr = 130
+    gap = 28
+
+    group_w = 2 * cr + gap + label_pill_w
+    group_left = (W - group_w) // 2
+
+    cx = group_left + cr
+    cy = card_y - 30
+
+    # circle shadow
     sh = Image.new("RGBA", (cr * 2 + 80, cr * 2 + 80), (0, 0, 0, 0))
     ImageDraw.Draw(sh).ellipse([40, 50, 40 + cr * 2, 50 + cr * 2], fill=(0, 0, 0, 120))
     sh = sh.filter(ImageFilter.GaussianBlur(12))
     im.alpha_composite(sh, (cx - cr - 40, cy - cr - 50))
+    # circle
     d.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=accent)
-    # thin white inner border
     d.ellipse([cx - cr + 8, cy - cr + 8, cx + cr - 8, cy + cr - 8],
               outline=(255, 255, 255, 200), width=4)
+    # letter — geometric centre
     f_letter = font(F_BLACK, 180)
-    # Use anchor=mm to center on the glyph's geometric middle, not the text-bbox.
     d.text((cx, cy), letter, font=f_letter, fill=WHITE, anchor="mm")
 
-    # "の3種" handwritten label - put in a small white pill so it reads on any bg
-    f_label = font(F_HAND, 52)
-    lbl = "の3種"
-    lw, lh = text_size(d, lbl, f_label)
-    lpx = cx + cr + 24
-    lpy = cy - lh // 2 - 6
-    d.rounded_rectangle([lpx - 18, lpy - 8, lpx + lw + 18, lpy + lh + 14],
-                        radius=22, fill=(255, 250, 244, 240))
-    d.text((lpx, lpy), lbl, font=f_label, fill=DEEP)
+    # "の3種" label pill, vertically centred on the circle
+    lpx_pill = group_left + 2 * cr + gap
+    lpy_pill = cy - label_pill_h // 2
+    d.rounded_rectangle(
+        [lpx_pill, lpy_pill, lpx_pill + label_pill_w, lpy_pill + label_pill_h],
+        radius=label_pill_h // 2,
+        fill=(255, 250, 244, 240),
+    )
+    # anchor=lm so the label centres vertically on the pill regardless of bbox padding
+    d.text((lpx_pill + pill_pad_x - lb[0], lpy_pill + label_pill_h // 2),
+           lbl, font=f_label, fill=DEEP, anchor="lm")
 
     # ingredient list (3 items)
     f_ing = font(F_BLACK, 88)
