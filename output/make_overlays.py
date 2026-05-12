@@ -368,7 +368,7 @@ def scene_price():
         bp_w, bp_h = bw + 44, bh + 22
         qb_full = d.textbbox((0, qty_y), qty, font=f_qty)
         ink_top = qb_full[1]
-        bp_y = ink_top - bp_h + 6  # slight overlap into qty's top whitespace
+        bp_y = ink_top - bp_h - 12  # sit just above the qty's visible top
         draw_pill(d, (row_x_left, bp_y), (bp_w, bp_h), color)
         d.text((row_x_left + 22, bp_y + 6), badge, font=f_bdg, fill=WHITE)
 
