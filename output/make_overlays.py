@@ -359,21 +359,23 @@ def scene_price():
     # its own qty so it visually pairs with that row, not with the row above.
     qty_top_first = card_y + 280
     row_gap = 230
-    badge_gap = 4  # px between badge bottom and qty top
     for i, (qty, yen, badge, color) in enumerate(items):
         qty_y = qty_top_first + i * row_gap
 
-        # badge sits just above qty
+        # badge sits just above the visible cap-line of the qty glyph
+        # (textbbox top is well above the ink, so anchor to the ink top).
         bw, bh = text_size(d, badge, f_bdg)
         bp_w, bp_h = bw + 44, bh + 22
-        bp_y = qty_y - bp_h - badge_gap
+        qb_full = d.textbbox((0, qty_y), qty, font=f_qty)
+        ink_top = qb_full[1]
+        bp_y = ink_top - bp_h + 6  # slight overlap into qty's top whitespace
         draw_pill(d, (row_x_left, bp_y), (bp_w, bp_h), color)
         d.text((row_x_left + 22, bp_y + 6), badge, font=f_bdg, fill=WHITE)
 
         # qty (left)
         d.text((row_x_left, qty_y), qty, font=f_qty, fill=DEEP)
 
-        # yen (right) baseline-aligned to qty via anchor=lm
+        # yen (right) baseline-aligned to qty via anchor=rm
         qb = d.textbbox((0, 0), qty, font=f_qty)
         q_mid_y = qty_y + (qb[1] + qb[3]) // 2
         d.text((W - row_x_right_pad, q_mid_y), yen, font=f_yen, fill=color, anchor="rm")
